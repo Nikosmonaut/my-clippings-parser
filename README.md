@@ -1,6 +1,7 @@
-# Simple c++ structure
+# Reader notes visualizer
 
-Basic c++ structure to create c++ projects
+Vizualize your notes from a reader.
+MyClippings.txt kindle
 
 ### Installing
 
