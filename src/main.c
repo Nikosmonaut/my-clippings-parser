@@ -1,23 +1,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "config_parser.h"
+#include "ini.h"
 
 int main()
 {
-    FILE *configFile;
-    Config *config = NULL;
+    Configuration config;
 
-    configFile = fopen("config", "r");
-    if (configFile == NULL)
+    if (ini_parse("config.ini", iniHandler, &config) < 0)
     {
-        perror("config");
-        exit(EXIT_FAILURE);
+        printf("Can't load 'config.ini'\n");
+
+        return 1;
     }
 
-    configParse(config, configFile);
+    
 
-    fclose(configFile);
-    //readFile of clippings or get them from stdin
-    //parseFile
+    printf("Ok config parsed with\ntitle : %s", config.title);
+
     return 0;
 }

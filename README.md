@@ -1,7 +1,7 @@
-# Reader notes visualizer
+# eReader annotations visualizer
 ## **WIP**
-Vizualize your notes from a reader.  
-MyClippings.txt kindle
+Vizualize annotations from your eReader.  
+WIP for MyClippings.txt kindle
 
 ### Installing
 
