@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "config_parser.h"
 #include "ini.h"
+#include "config_parser.h"
+#include "annotations_parser.h"
 
 int main()
 {
@@ -14,9 +15,7 @@ int main()
         return 1;
     }
 
-    
-
-    printf("Ok config parsed with\ntitle : %s", config.title);
+    annotations_parse("MyClippings.txt", config);
 
     return 0;
 }
