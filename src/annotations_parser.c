@@ -5,20 +5,24 @@
 #include "config_parser.h"
 #include "annotations_parser.h"
 
-static int readLine(char *line, FILE *file)
+char *readLine(FILE *file)
 {
     int character;
     int pos = 0;
     int lineSize = DEFAULT_LINE_SIZE;
-    line = (char *)malloc(DEFAULT_LINE_SIZE);
+    char *line = malloc(DEFAULT_LINE_SIZE + 1);
 
     character = fgetc(file);
     while (character != EOF && character != '\n')
     {
+        if (character == '\r')
+        {
+            fgetc(file);
+            break;
+        }
         if (pos >= lineSize - 1)
         {
-            break;
-            line = (char *)realloc(line, lineSize + DEFAULT_LINE_SIZE);
+            line = realloc(line, lineSize + DEFAULT_LINE_SIZE + 1);
             if (line == NULL)
             {
                 printf("Memory allocation failed");
@@ -28,31 +32,69 @@ static int readLine(char *line, FILE *file)
             lineSize = lineSize + DEFAULT_LINE_SIZE;
         }
 
+        printf("Char %c\n", character);
         line[pos] = character;
         pos++;
         character = fgetc(file);
     }
 
-    printf("Good first line is :\n%s", line);
-    return 0;
+    line[pos] = '\0';
+
+    return line;
 }
 
-int annotations_parse(char *fileName, Configuration config)
+char *readAnnotation(FILE *file, char *separator)
+{
+    char *annotation = NULL;
+    char *line = NULL;
+    int lineLength;
+    int annotationLength;
+
+    line = readLine(file);
+    printf("La ligne: %s\n", line);
+
+    while (EOF && line != NULL && strcmp(line, separator) != 0)
+    {
+        lineLength = (line != NULL) ? strlen(line) + 1 : 1;
+        annotationLength += lineLength;
+
+        annotation = realloc(annotation, annotationLength);
+        strncat(annotation, line, lineLength);
+        printf("Annotation : %s\n", annotation);
+        free(line);
+        line = NULL;
+        line = readLine(file);
+        printf("La ligne : %s\n", line);
+    }
+
+    return annotation;
+}
+
+int annotations_parse(char *fileName, Configuration *config)
 {
     FILE *file;
-    char *line = NULL;
+    char *annotation = NULL;
 
     file = fopen(fileName, "r");
 
-    if (!file)
+    if (file == NULL)
     {
         perror("Could not open file");
+        return 1;
     }
 
-    readLine(line, file);
+    annotation = readAnnotation(file, config->separator);
 
-    free(line);
-    fclose(file);
+    printf("Annotation : %s\n", annotation);
+
+    if (annotation != NULL)
+    {
+        free(annotation);
+        annotation = NULL;
+    }
+
+    // fclose(file);
+    // file = NULL;
 
     return 0;
 }

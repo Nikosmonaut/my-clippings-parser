@@ -4,15 +4,18 @@
 
 typedef struct
 {
-    const char *parser_pattern;
-    const char *separator;
-    const char *title;
-    const char *author;
-    const char *position;
-    const char *date;
-    const char *comment;
+    char *parser_pattern;
+    char *separator;
+    char *title;
+    char *author;
+    char *position;
+    char *date;
+    char *comment;
 } Configuration;
 
+/**
+ *  Configuration struct hydrator according to inih
+ */
 int iniHandler(void *user, const char *section, const char *name, const char *value);
 
 #endif

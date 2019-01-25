@@ -14,8 +14,9 @@ int main()
 
         return 1;
     }
+    printf("Test\n");
 
-    annotations_parse("MyClippings.txt", config);
+    annotations_parse("../../../MyClippings.txt", &config);
 
     return 0;
 }

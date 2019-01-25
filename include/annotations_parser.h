@@ -3,7 +3,7 @@
 
 #include "config_parser.h"
 
-#define DEFAULT_LINE_SIZE 40
+#define DEFAULT_LINE_SIZE 3
 
 typedef struct
 {
@@ -14,6 +14,11 @@ typedef struct
     const char *comment;
 } Annotation;
 
-int annotations_parse(char *fileName, Configuration config);
+/**
+ * Parse annotations text file
+ * @param fileName file to parse
+ * @params config configuration to handle parsing
+ */
+int annotations_parse(char *fileName, Configuration *config);
 
 #endif
