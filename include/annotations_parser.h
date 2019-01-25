@@ -3,7 +3,7 @@
 
 #include "config_parser.h"
 
-#define DEFAULT_LINE_SIZE 3
+#define MAX_LINE_LENGTH 1024
 
 typedef struct
 {

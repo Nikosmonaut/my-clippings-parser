@@ -5,69 +5,68 @@
 #include "config_parser.h"
 #include "annotations_parser.h"
 
-char *readLine(FILE *file)
+char *read_annotation(FILE *file, char *separator)
 {
-    int character;
-    int pos = 0;
-    int lineSize = DEFAULT_LINE_SIZE;
-    char *line = malloc(DEFAULT_LINE_SIZE + 1);
-
-    character = fgetc(file);
-    while (character != EOF && character != '\n')
-    {
-        if (character == '\r')
-        {
-            fgetc(file);
-            break;
-        }
-        if (pos >= lineSize - 1)
-        {
-            line = realloc(line, lineSize + DEFAULT_LINE_SIZE + 1);
-            if (line == NULL)
-            {
-                printf("Memory allocation failed");
-                exit(1);
-            }
-
-            lineSize = lineSize + DEFAULT_LINE_SIZE;
-        }
-
-        printf("Char %c\n", character);
-        line[pos] = character;
-        pos++;
-        character = fgetc(file);
-    }
-
-    line[pos] = '\0';
-
-    return line;
-}
-
-char *readAnnotation(FILE *file, char *separator)
-{
-    char *annotation = NULL;
-    char *line = NULL;
-    int lineLength;
+    char *annotation = '\0';
+    char *line = malloc(MAX_LINE_LENGTH);
+    int lineLength = 0;
     int annotationLength;
+    int separatorLenght = strlen(separator);
 
-    line = readLine(file);
-    printf("La ligne: %s\n", line);
-
-    while (EOF && line != NULL && strcmp(line, separator) != 0)
+    while (fgets(line, MAX_LINE_LENGTH, file) != NULL && strncmp(line, separator, separatorLenght) != 0)
     {
-        lineLength = (line != NULL) ? strlen(line) + 1 : 1;
+        lineLength = strlen(line) + 1;
         annotationLength += lineLength;
 
         annotation = realloc(annotation, annotationLength);
+        if (annotation == NULL)
+        {
+            perror("Could not realloc space");
+            exit(1);
+        }
         strncat(annotation, line, lineLength);
-        printf("Annotation : %s\n", annotation);
-        free(line);
-        line = NULL;
-        line = readLine(file);
-        printf("La ligne : %s\n", line);
     }
 
     return annotation;
+}
+
+int parse_annotation(char *annotation, Configuration *config)
+{
+    regex_t regex;
+    int reti;
+    char msgbuf[100];
+    size_t nmatch = 5;
+    regmatch_t pmatch[5];
+
+    printf("%s\n", annotation);
+    printf("%s\n", config->parser_pattern);
+
+    reti = regcomp(&regex, config->parser_pattern, 0);
+    if (reti)
+    {
+        // fprintf(stderr, "Could not compile regex\n");
+        exit(1);
+    }
+
+    reti = regexec(&regex, annotation, nmatch, pmatch, 0);
+    if (!reti)
+    {
+        puts("Match");
+    }
+    else if (reti == REG_NOMATCH)
+    {
+        puts("No match");
+    }
+    else
+    {
+        // regerror(reti, &regex, msgbuf, sizeof(msgbuf));
+        // fprintf(stderr, "Regex match failed: %s\n", msgbuf);
+        exit(1);
+    }
+
+    regfree(&regex);
+
+    return 0;
 }
 
 int annotations_parse(char *fileName, Configuration *config)
@@ -83,9 +82,8 @@ int annotations_parse(char *fileName, Configuration *config)
         return 1;
     }
 
-    annotation = readAnnotation(file, config->separator);
-
-    printf("Annotation : %s\n", annotation);
+    annotation = read_annotation(file, config->separator);
+    parse_annotation(annotation, config);
 
     if (annotation != NULL)
     {
@@ -93,47 +91,8 @@ int annotations_parse(char *fileName, Configuration *config)
         annotation = NULL;
     }
 
-    // fclose(file);
-    // file = NULL;
+    fclose(file);
+    file = NULL;
 
     return 0;
 }
-// int annotations_parse(char *fileName, Configuration config)
-// {
-//     char configLine[CONFIG_LINE_LENGTH];
-//     regex_t regex;
-//     int reti;
-//     char msgbuf[100];
-
-//     reti = regcomp(&regex, "(.*)=\"(.*)\"", 0);
-//     if (reti)
-//     {
-//         fprintf(stderr, "Could not compile regex\n");
-//         exit(1);
-//     }
-
-//     while (fgets(configLine, CONFIG_LINE_LENGTH, file) != NULL)
-//     {
-//         printf("Read line %s\n", configLine);
-//         reti = regexec(&regex, configLine, 0, NULL, 0);
-//         printf("reti : %d", reti);
-//         if (!reti)
-//         {
-//             puts("Match");
-//         }
-//         else if (reti == REG_NOMATCH)
-//         {
-//             puts("No match");
-//         }
-//         else
-//         {
-//             regerror(reti, &regex, msgbuf, sizeof(msgbuf));
-//             fprintf(stderr, "Regex match failed: %s\n", msgbuf);
-//             exit(1);
-//         }
-//     }
-
-//     regfree(&regex);
-
-//     return 0;
-// }
