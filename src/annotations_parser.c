@@ -32,28 +32,38 @@ char *read_annotation(FILE *file, char *separator)
 
 int parse_annotation(char *annotation, Configuration *config)
 {
-    regex_t regex;
-    int reti;
+    int status;
     char msgbuf[100];
-    size_t nmatch = 5;
-    regmatch_t pmatch[5];
+    regex_t regex;
+    size_t maxGroups = 7;
+    regmatch_t groupList[7];
 
-    printf("%s\n", annotation);
+    printf("%s", annotation);
     printf("%s\n", config->parser_pattern);
 
-    reti = regcomp(&regex, config->parser_pattern, 0);
-    if (reti)
+    if (regcomp(&regex, config->parser_pattern, REG_NEWLINE | REG_EXTENDED) != 0)
     {
-        // fprintf(stderr, "Could not compile regex\n");
+        perror("Could not compile regex\n");
         exit(1);
     }
 
-    reti = regexec(&regex, annotation, nmatch, pmatch, 0);
-    if (!reti)
+    status = regexec(&regex, annotation, maxGroups, groupList, 0);
+    if (!status)
     {
-        puts("Match");
+        for (unsigned int i = 0; i < maxGroups; i++)
+        {
+            if (groupList[i].rm_so == (size_t)-1)
+                break; // No more groups
+
+            char sourceCopy[strlen(annotation) + 1];
+            strcpy(sourceCopy, annotation);
+            sourceCopy[groupList[i].rm_eo] = 0;
+            printf("Group %u: [%2u-%2u]: %s\n",
+                   i, groupList[i].rm_so, groupList[i].rm_eo,
+                   sourceCopy + groupList[i].rm_so);
+        }
     }
-    else if (reti == REG_NOMATCH)
+    else if (status == REG_NOMATCH)
     {
         puts("No match");
     }

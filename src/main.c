@@ -10,12 +10,12 @@ int main()
 
     if (ini_parse("config.ini", iniHandler, &config) < 0)
     {
-        printf("Can't load 'config.ini'\n");
+        perror("Can't load 'config.ini'\n");
 
         return 1;
     }
 
-    annotations_parse("../../../MyClippings.txt", &config);
+    annotations_parse("test.txt", &config);
 
     return 0;
 }
